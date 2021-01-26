@@ -20,17 +20,23 @@ WARNING : module names are CaSe SenSitiVe! For instance, jquery datable needs to
 
 Then, all you need to do is to run the script:
 
-    ModularBehaviour.run();
+```javascript
+ModularBehaviour.run();
+```
 
 If you are not using deferred scripts (hint: you should be), you can call init() that will wrap the run
 call in a dom ready callback:
 
-    ModularBehaviour.init();
+```javascript
+ModularBehaviour.init();
+```
 
 Be aware that this will trigger on dom ready. Therefore, any requirements (maybe you will load other scripts later)
 need to be loaded BEFORE calling this. If this is not possible, you can fallback to:
 
-    ModularBehaviour.load();
+```javascript
+ModularBehaviour.load();
+```
 
 This will trigger on page load instead. It's slower (because it waits for all scripts to be loaded and parsed, including css)
 but safer.
@@ -68,27 +74,37 @@ You can add multiple handlers, simply add a space between each
 
 ### Add option transformers
 
-Sometimes you want to apply so default options to all modules. You can achieve this
+Sometimes you want to apply some default options to all modules. You can achieve this
 by defining an option transform
 
-    ModularBehaviour.addOptionsTransformer('myModule',function(opts,el) { // modify here the options object });
+```javascript
+ModularBehaviour.addOptionsTransformer('myModule',function(opts,el) { 
+    // modify here the options object 
+});
+```
 
 The options object passed is as collected for the given node.
 
 A typical use case is to apply custom data attribute to the config
 
-    ModularBehaviour.addOptionsTransformer('myModule',function(opts,el) {
-        if(el.dataset.thisOption) {
-            opts.thatOption = el.dataset.thisOption;
-        }
-    });
+```javascript
+ModularBehaviour.addOptionsTransformer('myModule',function(opts,el) {
+    if(el.dataset.thisOption) {
+        opts.thatOption = el.dataset.thisOption;
+    }
+});
+```
 
 ### Add after init hooks
 
 Not all modules or javascript libs let you configure everything through options. Sometimes
 you need to call methods. This is possible using afterInitHooks.
 
-    ModularBehaviour.addAfterInitHook('myModule',function(inst) { // call what you need on module instance });
+```javascript
+ModularBehaviour.addAfterInitHook('myModule',function(inst) { 
+    // call what you need on module instance 
+});
+```
 
 ### Handling updates
 
@@ -96,17 +112,23 @@ But what if the document changes due to some external updates or an ajax load ?
 
 You can simply run
 
-    ModularBehaviour.run();
+```javascript
+ModularBehaviour.run();
+```
 
 With jQuery you can do something like
 
-    // after each successfull ajax request, try to init modules again
-    $(document).ajaxSuccess(function (event, xhr, settings) {
-        ModularBehaviour.run();
-    });
+```javascript
+// after each successfull ajax request, try to init modules again
+$(document).ajaxSuccess(function (event, xhr, settings) {
+    ModularBehaviour.run();
+});
+```
 
-### Set globa config options
+### Set global config options
 
 You can also set config options, this can be used to enable debug mode
 
-    ModularBehaviour.setConfig('debug',true);
+```javascript
+ModularBehaviour.setConfig('debug',true);
+```
