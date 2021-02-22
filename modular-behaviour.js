@@ -21,7 +21,7 @@
         optionsKey: "options",
         maxTries: 5,
         retryInterval: 250,
-        debug: false,
+        debug: true,
     };
 
     /**
@@ -34,6 +34,7 @@
     function instantiate(constructor, args) {
         // Available since IE>=9
         var instance = Object.create(constructor.prototype);
+        // The function will receive the node instance and an array of options
         constructor.apply(instance, args);
         return instance;
     }
@@ -79,9 +80,15 @@
         /**
          * This is simply a wrapper of run inside a dom ready function
          * Any requirements should be loaded before this is called
+         * @param {Object} newConfig
          */
-        init: function () {
+        init: function (newConfig) {
             var self = this;
+            if (newConfig) {
+                for (var newConfigKey in newConfig) {
+                    this.setConfig(newConfig[newConfigKey]);
+                }
+            }
             ready(function () {
                 self.run();
             });
@@ -90,7 +97,7 @@
          * Get a global config key
          * @param {string} k
          */
-        getConfig: function(k) {
+        getConfig: function (k) {
             return config[k];
         },
         /**
@@ -98,7 +105,7 @@
          * @param {string} k
          * @param {*} v
          */
-        setConfig: function(k,v) {
+        setConfig: function (k, v) {
             config[k] = v;
         },
         /**
@@ -207,14 +214,23 @@
         configureModule: function (element, module, options) {
             var inst;
             var self = this;
+            var namespace;
+
+            // It is namespaced
+            if (module.indexOf(".") !== -1) {
+                var parts = module.split(".");
+                namespace = parts[0];
+            }
 
             // Determine our type of plugin/module
-            if ($ && typeof $.fn[module] !== "undefined") {
-                // It's a jQuery module
-                debug("Configuring jQuery module " + module);
-                // Wrap element and call the plugin with the config
-                inst = $.fn[module].call($(element), options);
-            } else if (typeof global[module] !== "undefined") {
+            if (namespace && typeof global[namespace] !== "undefined") {
+                // It's a namespaced global object
+                debug("Configuring namespaced js module " + module);
+                inst = instantiate(global[namespace][parts[1]], [
+                    "#" + element.getAttribute("id"),
+                    options,
+                ]);
+            } else if (!namespace && typeof global[module] !== "undefined") {
                 // It's a global object, expecting the "new" keyword to be used
                 // if you don't want to use the "new" keyword, consider wrapping the function in a jQuery plugin
                 debug("Configuring js module " + module);
@@ -222,6 +238,11 @@
                     "#" + element.getAttribute("id"),
                     options,
                 ]);
+            } else if ($ && typeof $.fn[module] !== "undefined") {
+                // It's a jQuery module
+                debug("Configuring jQuery module " + module);
+                // Wrap element and call the plugin with the config
+                inst = $.fn[module].call($(element), options);
             } else {
                 // Not defined
                 debug("Undefined module " + module);
@@ -269,7 +290,7 @@
             // Some plugins need an id to work
             if (!element.getAttribute("id")) {
                 debug("an id has been set for an element");
-                element.setAttribute(getNewId());
+                element.setAttribute("id", getNewId());
             }
 
             var modules = element.getAttribute(config.attr).split(" ");
