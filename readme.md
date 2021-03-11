@@ -117,7 +117,12 @@ Not all modules or javascript libs let you configure everything through options.
 you need to call methods. This is possible using afterInitHooks.
 
 ```js
-ModularBehaviour.addAfterInitHook('myModule',function(inst, el, opts) { // call what you need on module instance });
+ModularBehaviour.addAfterInitHook('myModule',function(inst, el, opts) { 
+    // call what you need on module instance 
+    // inst : the instantianted class or jquery plugin
+    // el : the html node
+    // opts : the options object
+});
 ```
 
 ### Handling updates
