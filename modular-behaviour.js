@@ -86,7 +86,7 @@
             var self = this;
             if (newConfig) {
                 for (var newConfigKey in newConfig) {
-                    this.setConfig(newConfig[newConfigKey]);
+                    this.setConfig(newConfigKey, newConfig[newConfigKey]);
                 }
             }
             ready(function () {
