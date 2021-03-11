@@ -21,7 +21,7 @@
         optionsKey: "options",
         maxTries: 5,
         retryInterval: 250,
-        debug: true,
+        debug: false,
     };
 
     /**

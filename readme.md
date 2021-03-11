@@ -149,7 +149,7 @@ Please be aware that all requirements should be loaded and available.
 If you need to load extra scripts before running your modules, you may
 need extra configuration.
 
-### Set globa config options
+### Set global config options
 
 You can also set config options, this can be used to enable debug mode
 
