@@ -105,6 +105,7 @@ A typical use case is to apply custom data attribute to the config
 
 ```js
 ModularBehaviour.addOptionsTransformer('myModule',function(opts,el) {
+    // opts is mutable so no need to return it
     if(el.dataset.thisOption) {
         opts.thatOption = el.dataset.thisOption;
     }
