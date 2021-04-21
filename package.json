@@ -1,6 +1,6 @@
 {
   "name": "modular-behaviour.js",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "Attach functions or jQuery plugins to your html nodes",
   "main": "modular-behaviour.js",
   "scripts": {
