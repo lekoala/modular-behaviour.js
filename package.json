@@ -1,10 +1,11 @@
 {
   "name": "modular-behaviour.js",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "Attach functions or jQuery plugins to your html nodes",
   "main": "modular-behaviour.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "http-server"
   },
   "repository": {
     "type": "git",

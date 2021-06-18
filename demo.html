@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modular behaviour</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css" />
+
+    <!-- required for IE11 -->
+    <script src="modular-behaviour-polyfill.js" nomodule defer></script>
+    <script src="modular-behaviour.js" defer></script>
+    <script type="module">
+      // Modules are deferred by default
+      ModularBehaviour.setConfig("debug", true);
+      ModularBehaviour.init();
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <script src="//cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js" defer></script>
+    <script nomodule>
+      // Since we defer our load, we need to wait until DOMContentLoaded
+      document.addEventListener("DOMContentLoaded", function (e) {
+        ModularBehaviour.setConfig("debug", true);
+        ModularBehaviour.init();
+      });
+    </script>
+    <script>
+      function addTable() {
+        var html = '<table id="table_id" class="display" data-mb="DataTable">';
+        html += "<thead>";
+        html += "<tr><th>Column 1</th><th>Column 2</th></tr>";
+        html += "</thead>";
+        html += "<tbody>";
+        html += "<tr><td>Row 1 Data 1</td><td>Row 1 Data 2</td></tr>";
+        html += "<tr><td>Row 2 Data 1</td><td>Row 2 Data 2</td></tr>";
+        html += "<tbody>";
+
+        document.getElementById("new-table").innerHTML = html;
+      }
+      function addFilepond() {
+        var html = '<input type="file" class="filepond" data-mb="FilePond:create" />';
+
+        // These should be catched by our trackScript function and delay running the filepond callback
+        $.getScript("https://cdn.jsdelivr.net/npm/filepond-polyfill@1.0.4/dist/filepond-polyfill.min.js");
+        $.getScript("https://cdn.jsdelivr.net/npm/filepond@4.28.2/dist/filepond.min.js", function (res) {
+          console.log("filepond loaded");
+        });
+        $("<link>").appendTo("head").attr({
+          type: "text/css",
+          rel: "stylesheet",
+          href: "https://cdn.jsdelivr.net/npm/filepond@4.28.2/dist/filepond.min.css",
+        });
+
+        document.getElementById("new-filepond").innerHTML = html;
+      }
+      function addCleave() {
+        var opts = {
+          date: true,
+          delimiter: "-",
+          datePattern: ["Y", "m", "d"],
+        };
+        // @link https://stackoverflow.com/questions/7322682/best-way-to-store-json-in-an-html-attribute
+        // Wrap options in single quotes
+        // var html = '<input class="input-date-a" placeholder="YYYY-MM-DD" type="tel" data-mb="Cleave" data-mb-options=\''+JSON.stringify(opts)+'\'>';
+        // Or encode with base64
+        var html = '<input class="input-date-a" placeholder="YYYY-MM-DD" type="tel" data-mb="Cleave" data-mb-options="base64:' + btoa(JSON.stringify(opts)) + '"">';
+        $.getScript("https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js");
+
+        document.getElementById("new-cleave").innerHTML = html;
+      }
+
+      var App = App || {};
+      App.demo = function (element, options) {
+        element.textContent = "Here are the options: " + JSON.stringify(options);
+      };
+    </script>
+    <style>
+      template {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <table id="table_id" class="display" data-mb="DataTable">
+        <thead>
+          <tr>
+            <th>Column 1</th>
+            <th>Column 2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+          </tr>
+          <tr>
+            <td>Row 2 Data 1</td>
+            <td>Row 2 Data 2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="new-table">
+        <button onclick="addTable()">Add new table</button>
+      </div>
+
+      <div id="new-filepond">
+        <button onclick="addFilepond()">Add filepond</button>
+      </div>
+
+      <div id="new-cleave">
+        <button onclick="addCleave()">Add cleave</button>
+      </div>
+
+      <template id="test-config">{"demo": "test", "other": "key"}</template>
+      <div id="namespace-test" data-mb="App.demo" data-mb-options="#test-config"></div>
+    </main>
+  </body>
+</html>
