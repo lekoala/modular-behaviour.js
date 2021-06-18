@@ -53,9 +53,10 @@
       }
     };
   }
-  document.querySelectorAll("script[src]").forEach(function (script) {
-    trackScript(script);
-  });
+  var scripts = document.querySelectorAll("script[src]");
+  for (var i = 0; i < scripts.length; i++) {
+    trackScript(scripts[i]);
+  }
 
   /**
    * Instantiate objects dynamically
@@ -146,7 +147,8 @@
       self.domObserver = new MutationObserver(function (mutations) {
         for (var i = 0; i < mutations.length; i++) {
           var mutation = mutations[i];
-          mutation.addedNodes.forEach(function (node) {
+          for (var j = 0; j < mutation.addedNodes.length; j++) {
+            var node = mutation.addedNodes[j];
             // Don't bother with nodes without a tag name or not connected to the dom
             // NOTE: IE 11 does not understand isConnected => check === false
             if (!node.tagName || node.isConnected === false) {
@@ -163,7 +165,7 @@
               debug("Configure element for mutation");
               self.configureElement(node);
             }
-          });
+          }
         }
       });
       // start observing on body or element
@@ -263,7 +265,7 @@
           // External config in an html node
           var externalConfigNode = document.getElementById(elementConfig.substring(1));
           // Support template nodes
-          if(externalConfigNode && externalConfigNode.tagName.toLowerCase() === "template") {
+          if (externalConfigNode && externalConfigNode.tagName.toLowerCase() === "template") {
             externalConfigNode = externalConfigNode.content;
           }
           var externalConfig = externalConfigNode && externalConfigNode.textContent;
