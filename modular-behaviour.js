@@ -5,7 +5,7 @@
  * https://github.com/lekoala/modular-behaviour.js
  * MIT License
  */
-(function (global) {
+ (function (global) {
   "use strict";
 
   // Just in case we used AMD
@@ -182,7 +182,7 @@
                 }
                 domTimer = setTimeout(function () {
                   self.run();
-                }, 50);
+                }, 100);
               }
             }
           }
@@ -229,7 +229,7 @@
       }
       debug("run");
       // Collect a static NodeList (need to query again after each ajax call or dom update)
-      var nodeList = document.querySelectorAll("[" + config.attr + "]");
+      var nodeList = document.querySelectorAll("[" + config.attr + "]:not(." + config.initClass + ")");
       for (var i = 0; i < nodeList.length; i++) {
         this.configureElement(nodeList[i]);
       }
