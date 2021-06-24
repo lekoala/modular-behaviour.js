@@ -31,7 +31,7 @@
   var shouldRun = false;
 
   /**
-   * @param {HTMLElement} script
+   * @param {HTMLScriptElement} script
    */
   function trackScript(script, increment) {
     if (script.hasAttribute("async")) {
@@ -40,9 +40,15 @@
     if (script.hasAttribute("nomodule")) {
       return;
     }
+    // scripts in the body do not trigger onload
+    if (script.parentNode.tagName.toLowerCase() != "head") {
+      return;
+    }
     scriptsLoading++;
+
     script.onload = function (e) {
       scriptsLoading--;
+      debug(scriptsLoading + " remaining scripts");
       if (scriptsLoading <= 0) {
         debug("all scripts loaded");
 
@@ -53,7 +59,7 @@
       }
     };
   }
-  var scripts = document.querySelectorAll("script[src]");
+  var scripts = document.querySelectorAll("head script[src]");
   for (var i = 0; i < scripts.length; i++) {
     trackScript(scripts[i]);
   }
