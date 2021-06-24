@@ -196,4 +196,5 @@ Here are the available config options:
 - maxTries: 3
 - retryInterval: 250
 - observeDom: true
+- runAfterDomChanges: true
 - debug: false

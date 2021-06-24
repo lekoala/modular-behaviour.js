@@ -14,6 +14,7 @@
   }
 
   var document = global.document;
+
   var config = {
     attr: "data-mb",
     failedClass: "mb-failed",
@@ -22,6 +23,7 @@
     maxTries: 3,
     retryInterval: 250,
     observeDom: true,
+    runAfterDomChanges: true,
     debug: false,
   };
 
@@ -146,6 +148,7 @@
      */
     startObserver: function () {
       var self = this;
+      var domTimer = null;
       if (self.domObserver) {
         return;
       }
@@ -166,10 +169,21 @@
               trackScript(node);
               shouldRun = true;
             }
-            // Check if node has our attribute and configure if necessary
-            if (!shouldRun && node.hasAttribute(config.attr)) {
-              debug("Configure element for mutation");
-              self.configureElement(node);
+            // Check if our node or it's children has our attribute and configure if necessary
+            if (!shouldRun) {
+              // Configure element if it's a single node
+              if (node.hasAttribute(config.attr)) {
+                self.configureElement(node);
+              }
+              // Also run on all children since we might not get all dom changes
+              if (config.runAfterDomChanges) {
+                if (domTimer) {
+                  clearTimeout(domTimer);
+                }
+                domTimer = setTimeout(function () {
+                  self.run();
+                }, 50);
+              }
             }
           }
         }
