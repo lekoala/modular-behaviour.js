@@ -44,7 +44,11 @@
     }
     scriptsLoading++;
 
+    var prevOnload = script.onload;
     script.onload = function (e) {
+      if (prevOnload) {
+        prevOnload(e);
+      }
       scriptsLoading--;
       debug(scriptsLoading + " remaining scripts");
       if (scriptsLoading <= 0) {
