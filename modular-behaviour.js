@@ -119,11 +119,15 @@
     optionsTransformers: {},
     afterInitHooks: {},
     domObserver: null,
+    initialized: false,
     /**
      * This is simply a wrapper of run inside a dom ready function
      * @param {Object} newConfig
      */
     init: function (newConfig) {
+      if (this.initialized) {
+        return;
+      }
       var self = this;
       if (newConfig) {
         for (var newConfigKey in newConfig) {
@@ -136,6 +140,7 @@
           self.startObserver();
         }
       });
+      this.initialized = true;
     },
     /**
      * Watches the dom for new nodes after run

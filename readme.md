@@ -36,6 +36,8 @@ NOTE: the init method should be called after all your configurations are set. If
 use options transformers or after init hooks, make sure they are defined before the
 nodes are added to the dom.
 
+`init` only works once. If you want to simply attach nodes manually, use `run`.
+
 ### Configure plugins or set options
 
 You can set options through the data attributes
