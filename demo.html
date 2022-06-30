@@ -1,121 +1,358 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
   <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modular behaviour</title>
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
-    <link rel="stylesheet" href="//cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css" />
+    <title>Modular behaviour demo</title>
 
-    <script src="modular-behaviour.js" defer></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#eeeeee" media="(prefers-color-scheme: dark)" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" type="module"></script>
+
+    <style type="text/css">
+      modular-behaviour {
+        visibility: hidden;
+      }
+      modular-behaviour.modular-behaviour-initialized {
+        visibility: visible;
+      }
+    </style>
     <script type="module">
-      // Modules are deferred by default
-      ModularBehaviour.setConfig("debug", true);
-      ModularBehaviour.init();
-    </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
-    <script src="//cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js" defer></script>
-    <script nomodule>
-      // Since we defer our load, we need to wait until DOMContentLoaded
-      document.addEventListener("DOMContentLoaded", function (e) {
-        ModularBehaviour.setConfig("debug", true);
-        ModularBehaviour.init();
+      customElements.whenDefined("modular-behaviour").then(() => {
+        console.log("it wasn't defined but now it is");
+        // note that if the bound function was already defined, it will be fired
+        // before the whenDefined promise is resolved
       });
     </script>
+
+    <script src="./modular-behaviour.js" type="module"></script>
+
+    <script type="module">
+      function yetToDefine(el, opts) {
+        el.innerHTML = "manually loaded";
+      }
+      customElements.whenDefined("modular-behaviour").then((inst) => {
+        console.log("it was already defined but it runs anyway");
+        let res1 = customElements.get("modular-behaviour").run("yetToDefine");
+        // false, because not available in global scope
+        window["yetToDefine"] = yetToDefine;
+        let res2 = customElements.get("modular-behaviour").run("yetToDefine");
+        // true
+        let res3 = customElements.get("modular-behaviour").run("yetToDefine");
+        // doesn't do anything
+      });
+    </script>
+
+    <!-- try with or without provides attribute to see the difference -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" type="module"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" type="module" provides="jQuery.select2"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/filepond@4.30.4/dist/filepond.min.js" type="module" provides="FilePond.create"></script>
+    <link href="https://cdn.jsdelivr.net/npm/filepond@4.30.4/dist/filepond.min.css" rel="stylesheet" />
+
+    <link href="https://unpkg.com/tabulator-tables@5.2.7/dist/css/tabulator.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@5.2.7/dist/js/tabulator.min.js" type="module" provides="Tabulator"></script>
+
+    <script type="module">
+      // Inline scripts cannot use "provides" feature
+      // import { TabulatorFull } from "https://cdn.jsdelivr.net/npm/tabulator-tables@5.2.7/src/js/builds/esm.js";
+      // You need to define it in the global scope
+      // window["Tabulator"] = TabulatorFull;
+      // console.log("Tabulator defined");
+    </script>
     <script>
-      function addTable() {
-        var html = '<table id="table_id" class="display" data-mb="DataTable">';
-        html += "<thead>";
-        html += "<tr><th>Column 1</th><th>Column 2</th></tr>";
-        html += "</thead>";
-        html += "<tbody>";
-        html += "<tr><td>Row 1 Data 1</td><td>Row 1 Data 2</td></tr>";
-        html += "<tr><td>Row 2 Data 1</td><td>Row 2 Data 2</td></tr>";
-        html += "<tbody>";
-
-        document.getElementById("new-table").innerHTML = html;
+      function myGlobalFunction(el, opts) {
+        el.innerHTML = "loaded";
+        console.log("myGlobalFunction", el, opts);
       }
-      function addFilepond() {
-        var html = '<input type="file" class="filepond" data-mb="FilePond:create" />';
+      console.log("loaded");
 
-        // These should be catched by our trackScript function and delay running the filepond callback
-        $.getScript("https://cdn.jsdelivr.net/npm/filepond-polyfill@1.0.4/dist/filepond-polyfill.min.js");
-        $.getScript("https://cdn.jsdelivr.net/npm/filepond@4.28.2/dist/filepond.min.js", function (res) {
-          console.log("filepond loaded");
-        });
-        $("<link>").appendTo("head").attr({
-          type: "text/css",
-          rel: "stylesheet",
-          href: "https://cdn.jsdelivr.net/npm/filepond@4.28.2/dist/filepond.min.css",
-        });
-
-        document.getElementById("new-filepond").innerHTML = html;
+      // This can be defined early, even if myGlobalModuleFunction is not loaded yet
+      function runMyGlobalModuleFunction(el, opts) {
+        myGlobalModuleFunction(el, opts);
+        el.innerHTML = el.innerHTML + " <strong>from runMyGlobalModuleFunction</strong>";
       }
+    </script>
+    <script type="module">
+      function myGlobalModuleFunction(el, opts) {
+        el.innerHTML = "loaded";
+        console.log("myGlobalModuleFunction", el, opts);
+      }
+      window["myGlobalModuleFunction"] = myGlobalModuleFunction;
+      console.log("module loaded");
+    </script>
+
+    <script type="module">
+      document.querySelector("#repl-button").addEventListener("click", (ev) => {
+        const newItem = document.createElement("modular-behaviour");
+        newItem.name = "somefunc";
+        newItem.innerHTML = "<div>use somefunc here</div>";
+        ev.target.parentNode.replaceChild(newItem, ev.target);
+      });
+      document.querySelector("#load-button").addEventListener("click", (ev) => {
+        ev.target.parentNode.removeChild(ev.target);
+
+        window["somefunc"] = function (el, opts) {
+          el.innerHTML = "i have been replaced by somefunc";
+        };
+      });
+    </script>
+
+    <script type="module">
       function addCleave() {
         var opts = {
           date: true,
           delimiter: "-",
           datePattern: ["Y", "m", "d"],
         };
-        // @link https://stackoverflow.com/questions/7322682/best-way-to-store-json-in-an-html-attribute
-        // Wrap options in single quotes
-        // var html = '<input class="input-date-a" placeholder="YYYY-MM-DD" type="tel" data-mb="Cleave" data-mb-options=\''+JSON.stringify(opts)+'\'>';
-        // Or encode with base64
-        var html = '<input class="input-date-a" placeholder="YYYY-MM-DD" type="tel" data-mb="Cleave" data-mb-options="base64:' + btoa(JSON.stringify(opts)) + '"">';
+        var json = JSON.stringify(opts);
+        var html = `<modular-behaviour name="Cleave" jsonconfig>
+            <input class="input-date-a" placeholder="YYYY-MM-DD" type="tel">
+            <template class="modular-behaviour-config">${json}</template>
+            </modular-behaviour>`;
+
         $.getScript("https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js");
 
         document.getElementById("new-cleave").innerHTML = html;
       }
 
-      var App = App || {};
-      App.demo = function (element, options) {
-        element.textContent = "Here are the options: " + JSON.stringify(options);
-      };
+      document.querySelector("#cleave-btn").addEventListener("click", (ev) => {
+        addCleave();
+      });
     </script>
-    <style>
-      template {
-        display: none;
-      }
-    </style>
   </head>
+
   <body>
-    <main>
-      <table id="table_id" class="display" data-mb="DataTable">
-        <thead>
-          <tr>
-            <th>Column 1</th>
-            <th>Column 2</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-          </tr>
-          <tr>
-            <td>Row 2 Data 1</td>
-            <td>Row 2 Data 2</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="container py-5">
+      <p>
+        Simply use <code>modular-behaviour</code> and set the name of the class you want to instantiate on the first node (if needed, pass a
+        selector attribute). Data attributes are converted to a config object.
+      </p>
+      <modular-behaviour name="myGlobalFunction" selector=".somenode" data-someconfig="test">
+        <div><!-- not used --></div>
+        <div class="somenode">Some content here</div>
+      </modular-behaviour>
+      <hr />
+      <p>
+        If function or class is not yet available, we will watch for it until defined. This can lead to FOUC without extra css (check inline
+        styles). You can use the "provides" syntax on your scripts for faster resolution than polling.
+      </p>
+      <modular-behaviour name="myGlobalModuleFunction">
+        <div>Some content here</div>
+      </modular-behaviour>
+      <hr />
 
-      <div id="new-table">
-        <button onclick="addTable()">Add new table</button>
-      </div>
+      <p>
+        It will work also for elements injected later on in the dom (through ajax, modals, etc.) regardless of when the proper class is
+        loaded. You can click on the buttons in any order, it doesn't matter.
+      </p>
 
-      <div id="new-filepond">
-        <button onclick="addFilepond()">Add filepond</button>
-      </div>
+      <button id="repl-button">Replace with new element</button>
+      <button id="load-button">Load function for this element</button>
 
-      <div id="new-cleave">
-        <button onclick="addCleave()">Add cleave</button>
-      </div>
+      <hr />
 
-      <template id="test-config">{"demo": "test", "other": "key"}</template>
-      <div id="namespace-test" data-mb="App.demo" data-mb-options="#test-config"></div>
+      <p>Maybe you want to wait until a function is defined but then run something else ?</p>
+      <modular-behaviour name="myGlobalModuleFunction" func="runMyGlobalModuleFunction">
+        <div>Some content here</div>
+      </modular-behaviour>
 
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    </main>
+      <hr />
+
+      <p>It works with jQuery and can be used to load select2 for example</p>
+
+      <modular-behaviour name="jQuery.select2">
+        <select class="js-example-basic-single" name="state">
+          <option value="AL">Alabama</option>
+          <option value="WY">Wyoming</option>
+        </select>
+      </modular-behaviour>
+
+      <hr />
+
+      <p>You can also init stuff manually without polling</p>
+      <modular-behaviour name="yetToDefine" manual>
+        <div>init</div>
+      </modular-behaviour>
+
+      <hr />
+
+      <modular-behaviour name="FilePond.create">
+        <input
+          type="file"
+          class="filepond"
+          name="filepond"
+          multiple
+          data-allow-reorder="true"
+          data-max-file-size="3MB"
+          data-max-files="3"
+        />
+      </modular-behaviour>
+
+      <hr />
+
+      <p>
+        You can use custom template config if you don't want to use regular <code>script</code> tags or want to delay init until node is
+        connected. You cannot use import since the script is created as a regular script, but it's probably more convenient than having a
+        bunch of data attributes. Data attribute will still override provided config.
+      </p>
+
+      <modular-behaviour name="Tabulator" config="tableconfig" data-height="300">
+        <div></div>
+        <!-- prettier-ignore -->
+        <template class="modular-behaviour-config">
+          var tabledata = [
+            { id: 1, name: "Oli Bob", age: "12", col: "red", dob: "" },
+            { id: 2, name: "Mary May", age: "1", col: "blue", dob: "14/05/1982" },
+            { id: 3, name: "Christine Lobowski", age: "42", col: "green", dob: "22/05/1982" },
+            { id: 4, name: "Brendon Philips", age: "125", col: "orange", dob: "01/08/1980" },
+            { id: 5, name: "Margret Marmajuke", age: "16", col: "yellow", dob: "31/01/1999" },
+          ];
+          var tableconfig = {
+            height: 205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+            data: tabledata, //assign data to table
+            layout: "fitColumns", //fit columns to width of table (optional)
+            columns: [
+              //Define Table Columns
+              { title: "Name", field: "name", width: 150 },
+              { title: "Age", field: "age", hozAlign: "left", formatter: "progress" },
+              { title: "Favourite Color", field: "col" },
+              { title: "Date Of Birth", field: "dob", sorter: "date", hozAlign: "center" },
+            ],
+          };
+        </template>
+      </modular-behaviour>
+
+      <hr />
+
+      <p>
+        You can also provide <code>jsonconfig</code> and not inject a script in the page. It needs to be a valid json (no comments, proper
+        quotes, no trailing commas...).
+      </p>
+
+      <modular-behaviour name="Tabulator" jsonconfig data-height="300">
+        <div></div>
+        <!-- prettier-ignore -->
+        <template class="modular-behaviour-config">
+          {
+            "height":205,
+            "data":[
+               {
+                  "id":1,
+                  "name":"Oli Bob",
+                  "age":"12",
+                  "col":"red",
+                  "dob":""
+               },
+               {
+                  "id":2,
+                  "name":"Mary May",
+                  "age":"1",
+                  "col":"blue",
+                  "dob":"14/05/1982"
+               },
+               {
+                  "id":3,
+                  "name":"Christine Lobowski",
+                  "age":"42",
+                  "col":"green",
+                  "dob":"22/05/1982"
+               },
+               {
+                  "id":4,
+                  "name":"Brendon Philips",
+                  "age":"125",
+                  "col":"orange",
+                  "dob":"01/08/1980"
+               },
+               {
+                  "id":5,
+                  "name":"Margret Marmajuke",
+                  "age":"16",
+                  "col":"yellow",
+                  "dob":"31/01/1999"
+               }
+            ],
+            "layout":"fitColumns",
+            "columns":[
+               {
+                  "title":"Name",
+                  "field":"name",
+                  "width":150
+               },
+               {
+                  "title":"Age",
+                  "field":"age",
+                  "hozAlign":"left",
+                  "formatter":"progress"
+               },
+               {
+                  "title":"Favourite Color",
+                  "field":"col"
+               },
+               {
+                  "title":"Date Of Birth",
+                  "field":"dob",
+                  "sorter":"date",
+                  "hozAlign":"center"
+               }
+            ]
+         }
+        </template>
+      </modular-behaviour>
+
+      <hr />
+
+      <p>
+        You can use a regular script that can be defined inside or outside of the element. Inline module will not work since they are
+        executed after. You can still use regular script tags, otherwise, you need to use the
+        <code>template.modular-behaviour.config</code>.
+      </p>
+      <modular-behaviour name="Tabulator" config="tableconfig2">
+        <div></div>
+        <script>
+          var tabledata2 = [
+            { id: 1, name: "Oli Bob", age: "12", col: "red", dob: "" },
+            { id: 2, name: "Mary May", age: "1", col: "blue", dob: "14/05/1982" },
+            { id: 3, name: "Christine Lobowski", age: "42", col: "green", dob: "22/05/1982" },
+            { id: 4, name: "Brendon Philips", age: "125", col: "orange", dob: "01/08/1980" },
+            { id: 5, name: "Margret Marmajuke", age: "16", col: "yellow", dob: "31/01/1999" },
+          ];
+          var tableconfig2 = {
+            height: 205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+            data: tabledata2, //assign data to table
+            layout: "fitColumns", //fit columns to width of table (optional)
+            columns: [
+              //Define Table Columns
+              { title: "Name", field: "name", width: 150 },
+              { title: "Age", field: "age", hozAlign: "left", formatter: "progress" },
+              { title: "Favourite Color", field: "col" },
+              { title: "Date Of Birth", field: "dob", sorter: "date", hozAlign: "center" },
+            ],
+          };
+        </script>
+      </modular-behaviour>
+
+      <hr />
+
+      <p>Add cleave dynamically and init from json config</p>
+
+      <button id="cleave-btn">Add cleave here</button>
+      <div id="new-cleave"></div>
+
+      <hr />
+
+      <p>If failed for too long, polling will stop. Counter resume at each new poll.</p>
+
+      <modular-behaviour name="iDontExist">
+        <div></div>
+      </modular-behaviour>
+    </div>
   </body>
 </html>
