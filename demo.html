@@ -78,6 +78,10 @@
         myGlobalModuleFunction(el, opts);
         el.innerHTML = el.innerHTML + " <strong>from runMyGlobalModuleFunction</strong>";
       }
+      var pageload = new Date().toLocaleString();
+      function imLazy(el, opts) {
+        el.innerHTML = "Lazy loaded at " + new Date().toLocaleString() + " vs page load at " + pageload;
+      }
     </script>
     <script type="module">
       function myGlobalModuleFunction(el, opts) {
@@ -101,6 +105,16 @@
         window["somefunc"] = function (el, opts) {
           el.innerHTML = "i have been replaced by somefunc";
         };
+      });
+
+      document.querySelector("#lazy-button").addEventListener("click", (ev) => {
+        document.querySelectorAll('.tab-pane').forEach((el) => {
+          let newLazyEl = document.createElement('modular-behaviour');
+          newLazyEl.lazy = true;
+          newLazyEl.name = "imLazy";
+          newLazyEl.innerHTML = "<div></div>";
+          el.appendChild(newLazyEl);
+        });
       });
     </script>
 
@@ -232,8 +246,8 @@
       <hr />
 
       <p>
-        You can also provide a json config if you omit the config attribute. This way, you do not inject a script in the page. It needs to be a valid json (no comments, proper
-        quotes, no trailing commas...).
+        You can also provide a json config if you omit the config attribute. This way, you do not inject a script in the page. It needs to
+        be a valid json (no comments, proper quotes, no trailing commas...).
       </p>
 
       <modular-behaviour name="Tabulator" data-height="300">
@@ -353,6 +367,35 @@
       <modular-behaviour name="iDontExist">
         <div></div>
       </modular-behaviour>
+
+      <hr />
+
+      <p>Gain more performance with lazy elements! Simply set a <code>lazy</code> attribute and it won't be initialized until actually visible in the viewport.
+      This works inside tabs too!</p>
+
+      <p>You can add elemeny dynamically, they are still observed too...</p>
+      <button id="lazy-button" class="mb-3">Add a new lazy element in all tabs</button>
+
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#tab1" data-bs-toggle="tab" data-bs-target="#tab1">Tab 1</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#tab2" data-bs-toggle="tab" data-bs-target="#tab2">Tab 2</a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active py-3" id="tab1" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+          <modular-behaviour name="imLazy" lazy>
+            <div></div>
+          </modular-behaviour>
+        </div>
+        <div class="tab-pane fade py-3" id="tab2" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+          <modular-behaviour name="imLazy" lazy>
+            <div></div>
+          </modular-behaviour>
+        </div>
+      </div>
     </div>
   </body>
 </html>

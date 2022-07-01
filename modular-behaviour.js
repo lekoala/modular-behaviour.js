@@ -39,6 +39,17 @@ let timer = () => {
     timeout = null; // clear timeout id
   }
 };
+/**
+ * @var {IntersectionObserver}
+ */
+let observer = new IntersectionObserver((entries, observerRef) => {
+  entries.forEach(async (entry) => {
+    if (entry.isIntersecting) {
+      observerRef.unobserve(entry.target);
+      entry.target.onConnect();
+    }
+  });
+});
 
 // Extra check on top of the regular poll timer
 window.addEventListener("DOMContentLoaded", () => {
@@ -96,6 +107,18 @@ class ModularBehaviour extends HTMLElement {
 
   get manual() {
     return this.hasAttribute("manual");
+  }
+
+  set lazy(value) {
+    if (value) {
+      this.setAttribute("lazy", "");
+    } else {
+      this.removeAttribute("lazy");
+    }
+  }
+
+  get lazy() {
+    return this.hasAttribute("lazy");
   }
 
   /**
@@ -309,7 +332,7 @@ class ModularBehaviour extends HTMLElement {
     this.classList.add(`${PREFIX}-initialized`);
   }
 
-  connectedCallback() {
+  onConnect() {
     // Look for the class or function to instantiate
     const constructor = ModularBehaviour.globalValue(this.name);
     if (!constructor) {
@@ -325,6 +348,14 @@ class ModularBehaviour extends HTMLElement {
       return;
     }
     this.init(constructor);
+  }
+
+  connectedCallback() {
+    if (this.lazy) {
+      observer.observe(this);
+      return;
+    }
+    this.onConnect();
   }
 }
 

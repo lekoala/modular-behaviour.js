@@ -11,7 +11,7 @@ NOTE: the v3 contains significant changes over the previous versions. Check bran
 
 This library act as a glue between your js libraries and your html document. It will allow to initialize most things
 out of the box by using a custom element. The V3 use a custom element because it's self initializing which is a big advantage over watching the dom for changes.
-You basically get "watching the dom" for free and get a clearer separation by note manipulating the html node itself.
+You basically get "watching the dom" for free and get a clearer separation by not manipulating the html node itself.
 
 A minor downside is that you add a extra html node, and therefore it may affect styling (eg: direct > selectors).
 
@@ -132,7 +132,7 @@ The script is executed after the function is available, but before its called.
 </modular-behaviour>
 ```
 
-## Manual init
+## Manual lookup
 
 If you don't want to use the automatic system that look for a function, you can initialize things yourself.
 
@@ -149,6 +149,28 @@ window["yetToDefine"] = function (el, opts) {};
 customElements.get("modular-behaviour").run("yetToDefine");
 ```
 
+NOTE: manual lookup still initialize everything automatically if `yetToDefine` is available when the custom
+element is loaded. It only prevents the polling of the scope to let you determine when the dependencies for this
+element are indeed loaded. 
+
+## Lazy init
+
+But what if you html nodes are not visible, because you have a long page or tabs ? Wouldn't it be a waste to initialize them
+immediately ?
+
+Indeed! This is why you can set a lazy attribute.
+
+```html
+<modular-behaviour name="imLazy" lazy>
+  <div></div>
+</modular-behaviour>
+```
+
+In this example, `imLazy` will only be looked for when the node is actually visible.
+
+NOTE: lazy elements don't get a pending class (that is specific for elements waiting to be initialized due to a missing callback
+in the global scope).
+
 ## Supported attributes
 
 | Name     | Default | Description                                                                           |
@@ -156,6 +178,7 @@ customElements.get("modular-behaviour").run("yetToDefine");
 | name     | null    | The name of the function to call in the global scope. It can be nested (eg: App.Func) |
 | config   | null    | The name of the var or function that provides the configuration                       |
 | manual   | false   | Don't use auto init system                                                            |
+| lazy     | false   | Lazily init html nodes when visible in viewport                                       |
 | selector | ''      | Custom selector to select the target node (first child element by default)            |
 | func     | ''      | Alternative function to call instead of the one provided by name                      |
 
