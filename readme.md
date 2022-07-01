@@ -151,7 +151,7 @@ customElements.get("modular-behaviour").run("yetToDefine");
 
 NOTE: manual lookup still initialize everything automatically if `yetToDefine` is available when the custom
 element is loaded. It only prevents the polling of the scope to let you determine when the dependencies for this
-element are indeed loaded. 
+element are indeed loaded.
 
 ## Lazy init
 
@@ -171,16 +171,35 @@ In this example, `imLazy` will only be looked for when the node is actually visi
 NOTE: lazy elements don't get a pending class (that is specific for elements waiting to be initialized due to a missing callback
 in the global scope).
 
+## Self contained elements
+
+You can go one step further than lazy loading, you can actually let modular behaviour load your js modules. It only requires that
+you set a `src` attribute that points to a js file that export default the class you want to load.
+
+Here is an example using my bootstrap5-tags library.
+
+```html
+<modular-behaviour name="Tags" src="https://cdn.jsdelivr.net/npm/bootstrap5-tags@1.4.35/tags.min.js" lazy>
+  <select class="form-select" id="tags" name="tags[]" multiple data-allow-clear="1" required>
+    <option selected="selected" disabled hidden value="">Choose a tag...</option>
+    <option value="1" selected="selected">Apple</option>
+    <option value="2">Banana</option>
+    <option value="3">Orange</option>
+  </select>
+</modular-behaviour>
+```
+
 ## Supported attributes
 
-| Name     | Default | Description                                                                           |
-| -------- | ------- | ------------------------------------------------------------------------------------- |
-| name     | null    | The name of the function to call in the global scope. It can be nested (eg: App.Func) |
-| config   | null    | The name of the var or function that provides the configuration                       |
-| manual   | false   | Don't use auto init system                                                            |
-| lazy     | false   | Lazily init html nodes when visible in viewport                                       |
-| selector | ''      | Custom selector to select the target node (first child element by default)            |
-| func     | ''      | Alternative function to call instead of the one provided by name                      |
+| Name     | Default | Description                                                                                                 |
+| -------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| name     | null    | The name of the function to call in the global scope. It can be nested (eg: App.Func)                       |
+| config   | null    | The name of the var or function that provides the configuration                                             |
+| manual   | false   | Don't use auto init system                                                                                  |
+| lazy     | false   | Lazily init html nodes when visible in viewport                                                             |
+| src      | ''      | Path to a js file that export a default class matching the name attribute that will be imported dynamically |
+| selector | ''      | Custom selector to select the target node (first child element by default)                                  |
+| func     | ''      | Alternative function to call instead of the one provided by name                                            |
 
 ## Demo
 

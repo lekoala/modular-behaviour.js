@@ -13,6 +13,9 @@ let watchList = {};
  * @var {number}
  */
 let timeoutCounter = 0;
+/**
+ * @var {number}
+ */
 let timeout = null;
 /**
  * @var {Function}
@@ -42,7 +45,7 @@ let timer = () => {
 /**
  * @var {IntersectionObserver}
  */
-let observer = new IntersectionObserver((entries, observerRef) => {
+let observer = new window.IntersectionObserver((entries, observerRef) => {
   entries.forEach(async (entry) => {
     if (entry.isIntersecting) {
       observerRef.unobserve(entry.target);
@@ -95,6 +98,14 @@ class ModularBehaviour extends HTMLElement {
 
   get config() {
     return this.getAttribute("config");
+  }
+
+  set src(value) {
+    this.setAttribute("src", value);
+  }
+
+  get src() {
+    return this.getAttribute("src");
   }
 
   set manual(value) {
@@ -332,9 +343,15 @@ class ModularBehaviour extends HTMLElement {
     this.classList.add(`${PREFIX}-initialized`);
   }
 
-  onConnect() {
-    // Look for the class or function to instantiate
-    const constructor = ModularBehaviour.globalValue(this.name);
+  async onConnect() {
+    let constructor;
+    if (this.src) {
+      // Load constructor dynamically. It expects a default exported class.
+      constructor = (await import(this.src)).default;
+    } else {
+      // Look for the class or function to instantiate
+      constructor = ModularBehaviour.globalValue(this.name);
+    }
     if (!constructor) {
       this.classList.add(`${PREFIX}-pending`);
       // Need to call `run` manually
@@ -352,6 +369,7 @@ class ModularBehaviour extends HTMLElement {
 
   connectedCallback() {
     if (this.lazy) {
+      // observer will call onConnect when element is visible
       observer.observe(this);
       return;
     }

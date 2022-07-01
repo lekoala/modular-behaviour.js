@@ -35,9 +35,9 @@
     ]
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^5.3.4",
     "ava": "^4.3.0",
     "esbuild": "^0.14.47",
-    "@happy-dom/global-registrator": "^5.3.4",
     "jquery": "^3.6.0"
   }
 }

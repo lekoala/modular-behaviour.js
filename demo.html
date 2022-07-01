@@ -108,8 +108,8 @@
       });
 
       document.querySelector("#lazy-button").addEventListener("click", (ev) => {
-        document.querySelectorAll('.tab-pane').forEach((el) => {
-          let newLazyEl = document.createElement('modular-behaviour');
+        document.querySelectorAll(".tab-pane").forEach((el) => {
+          let newLazyEl = document.createElement("modular-behaviour");
           newLazyEl.lazy = true;
           newLazyEl.name = "imLazy";
           newLazyEl.innerHTML = "<div></div>";
@@ -370,8 +370,10 @@
 
       <hr />
 
-      <p>Gain more performance with lazy elements! Simply set a <code>lazy</code> attribute and it won't be initialized until actually visible in the viewport.
-      This works inside tabs too!</p>
+      <p>
+        Gain more performance with lazy elements! Simply set a <code>lazy</code> attribute and it won't be initialized until actually
+        visible in the viewport. This works inside tabs too!
+      </p>
 
       <p>You can add elemeny dynamically, they are still observed too...</p>
       <button id="lazy-button" class="mb-3">Add a new lazy element in all tabs</button>
@@ -396,6 +398,27 @@
           </modular-behaviour>
         </div>
       </div>
+
+      <hr />
+
+      <p>
+        Get even more performance with lazy loading of the source script! Add <code>src</code> attribute and your source module will be
+        imported dynamically! Isn't that really cool ? This way, you can have a fully self contained element.
+      </p>
+
+      <form action="https://vercel-dumper.vercel.app/">
+        <modular-behaviour name="Tags" src="https://cdn.jsdelivr.net/npm/bootstrap5-tags@1.4.35/tags.min.js" lazy>
+          <select class="form-select" id="tags" name="tags[]" multiple data-allow-clear="1" required>
+            <option selected="selected" disabled hidden value="">Choose a tag...</option>
+            <option value="1" selected="selected">Apple</option>
+            <option value="2">Banana</option>
+            <option value="3">Orange</option>
+            <option value="4" disabled="disabled">Disabled</option>
+            <option value="5">This is a tag that should not overflow out of the window</option>
+          </select>
+        </modular-behaviour>
+        <input type="submit" />
+      </form>
     </div>
   </body>
 </html>

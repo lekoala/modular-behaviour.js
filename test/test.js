@@ -1,6 +1,6 @@
-import ModularBehaviour from "../modular-behaviour.js";
 import jQuery from "jquery";
 import test from "ava";
+import ModularBehaviour from "../modular-behaviour.js";
 
 window.$ = window.jQuery = jQuery;
 jQuery.fn.testPlugin = function (opts) {
@@ -143,7 +143,7 @@ test("it can have a json config", (t) => {
   t.is(node.firstElementChild.innerHTML, "test");
 });
 
-test("it polls functions", (t) => {
+test("it polls functions", async (t) => {
   let node = document.createElement("modular-behaviour");
   node.setAttribute("name", "testFunc2");
   node.innerHTML = "<div>init</div>";
@@ -161,10 +161,14 @@ test("it polls functions", (t) => {
   t.is(inst.watching().length, 1);
 
   // Wait more than polling and check if it works
-  setTimeout(() => {
-    t.is(node.firstElementChild.innerHTML, "test");
-    t.assert(!node.classList.contains("modular-behaviour-pending"));
-  }, 150);
+  // ava needs a promise to prevent closing early
+  await new Promise((resolve, reject) => {
+    setTimeout(() => {
+      t.is(node.firstElementChild.innerHTML, "test");
+      t.assert(!node.classList.contains("modular-behaviour-pending"));
+      resolve();
+    }, 150);
+  });
 });
 
 test("it can init manually", (t) => {
@@ -218,4 +222,44 @@ test("it works with jQuery plugins", (t) => {
   t.is(node.firstElementChild.innerHTML, "jquery");
   // it propagate config
   t.assert(node.firstElementChild.classList.contains("val"));
+});
+
+test("it can lazy load elements", async (t) => {
+  window["lazyFunc"] = function (el, opts) {
+    el.innerHTML = "test";
+  };
+  let node = document.createElement("modular-behaviour");
+  node.setAttribute("name", "lazyFunc");
+  node.lazy = true;
+  node.innerHTML = "<div>init</div>";
+  document.appendChild(node);
+  t.is(node.firstElementChild.innerHTML, "init");
+
+  // Return promise so that ava waits for the setTimeout to complete
+  await new Promise((resolve, reject) => {
+    setTimeout(() => {
+      t.not(node.firstElementChild.innerHTML, "init");
+      t.is(node.firstElementChild.innerHTML, "test");
+      resolve();
+    }, 50);
+  });
+});
+
+test("it can load the source dynamically", async (t) => {
+  let node = document.createElement("modular-behaviour");
+  node.setAttribute("name", "MyMockClass");
+  node.lazy = true;
+  node.src = "./test/_mock.js";
+  node.innerHTML = "<div>init</div>";
+  document.appendChild(node);
+  t.is(node.firstElementChild.innerHTML, "init");
+
+  // Return promise so that ava waits for the setTimeout to complete
+  await new Promise((resolve, reject) => {
+    setTimeout(() => {
+      t.not(node.firstElementChild.innerHTML, "init");
+      t.is(node.firstElementChild.innerHTML, "mock");
+      resolve();
+    }, 50);
+  });
 });
