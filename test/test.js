@@ -117,6 +117,32 @@ test("it can have a templated config", (t) => {
   t.is(node.firstElementChild.innerHTML, "test");
 });
 
+test("it can have a json config", (t) => {
+  window["testJsonConfig"] = function (el, opts) {
+    el.innerHTML = opts.value ?? "failed";
+  };
+  let node = document.createElement("modular-behaviour");
+  node.setAttribute("name", "testJsonConfig");
+  node.innerHTML = "<div>init</div>";
+
+  // need version 5.3.3
+  // https://github.com/capricorn86/happy-dom/issues/451
+  let template = document.createElement("template");
+  template.classList.add("modular-behaviour-config");
+
+  template.innerHTML = '{"value": "test"}';
+
+  node.appendChild(template);
+  document.appendChild(node);
+
+  const tpl = node.querySelector("template.modular-behaviour-config");
+
+  t.truthy(tpl);
+  t.not(node.firstElementChild.innerHTML, "failed");
+  t.not(node.firstElementChild.innerHTML, "init");
+  t.is(node.firstElementChild.innerHTML, "test");
+});
+
 test("it polls functions", (t) => {
   let node = document.createElement("modular-behaviour");
   node.setAttribute("name", "testFunc2");

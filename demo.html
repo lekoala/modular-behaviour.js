@@ -112,7 +112,7 @@
           datePattern: ["Y", "m", "d"],
         };
         var json = JSON.stringify(opts);
-        var html = `<modular-behaviour name="Cleave" jsonconfig>
+        var html = `<modular-behaviour name="Cleave">
             <input class="input-date-a" placeholder="YYYY-MM-DD" type="tel">
             <template class="modular-behaviour-config">${json}</template>
             </modular-behaviour>`;
@@ -232,11 +232,11 @@
       <hr />
 
       <p>
-        You can also provide <code>jsonconfig</code> and not inject a script in the page. It needs to be a valid json (no comments, proper
+        You can also provide a json config if you omit the config attribute. This way, you do not inject a script in the page. It needs to be a valid json (no comments, proper
         quotes, no trailing commas...).
       </p>
 
-      <modular-behaviour name="Tabulator" jsonconfig data-height="300">
+      <modular-behaviour name="Tabulator" data-height="300">
         <div></div>
         <!-- prettier-ignore -->
         <template class="modular-behaviour-config">

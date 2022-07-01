@@ -10,13 +10,40 @@ let idx = 0;
  */
 let watchList = {};
 /**
- * @var {Function}
- */
-let timeout = null;
-/**
  * @var {number}
  */
 let timeoutCounter = 0;
+let timeout = null;
+/**
+ * @var {Function}
+ */
+let timer = () => {
+  const res = ModularBehaviour.scanWatchList();
+  if (res) {
+    // Everything is loaded, don't set timeout again
+    return;
+  }
+  if (timeoutCounter < 100) {
+    // 10 times at 10ms
+    timeoutCounter += 10;
+  } else {
+    // 20 times at 100ms
+    timeoutCounter += 100;
+  }
+
+  if (timeoutCounter < 2000) {
+    timeout = setTimeout(timer, timeoutCounter);
+  } else {
+    console.warn(`Unable to load ${ModularBehaviour.watching().join(",")}`);
+    watchList = {}; // reset list
+    timeout = null; // clear timeout id
+  }
+};
+
+// Extra check on top of the regular poll timer
+window.addEventListener("DOMContentLoaded", () => {
+  ModularBehaviour.scanWatchList();
+});
 
 /**
  * Easily bind js behaviour to your html nodes
@@ -69,18 +96,6 @@ class ModularBehaviour extends HTMLElement {
 
   get manual() {
     return this.hasAttribute("manual");
-  }
-
-  set jsonconfig(value) {
-    if (value) {
-      this.setAttribute("jsonconfig", "");
-    } else {
-      this.removeAttribute("jsonconfig");
-    }
-  }
-
-  get jsonconfig() {
-    return this.hasAttribute("jsonconfig");
   }
 
   /**
@@ -173,28 +188,8 @@ class ModularBehaviour extends HTMLElement {
     // Set a progressive timer for all, but always reset counter
     timeoutCounter = 10;
     if (!timeout) {
-      timeout = () => {
-        const res = ModularBehaviour.scanWatchList();
-        if (res) {
-          timeout = null;
-          return;
-        }
-        if (timeoutCounter < 100) {
-          // 10 times at 10ms
-          timeoutCounter += 10;
-        } else {
-          // 20 times at 10ms
-          timeoutCounter += 100;
-        }
-
-        if (timeoutCounter < 2000) {
-          setTimeout(timeout, timeoutCounter);
-        } else {
-          console.warn(`Unable to load ${ModularBehaviour.watching().join(",")}`);
-          watchList = {};
-        }
-      };
-      setTimeout(timeout, timeoutCounter);
+      // This allows us to wait for delayed init due to async js loading, etc.
+      timer();
     }
   }
 
@@ -206,16 +201,20 @@ class ModularBehaviour extends HTMLElement {
     for (var n in watchList) {
       const constructor = ModularBehaviour.globalValue(n);
       if (constructor) {
+        // init all pending
         for (var cb of watchList[n]) {
           cb(constructor);
         }
         delete watchList[n];
-
-        // everything is cleared
-        if (!Object.keys(watchList).length) {
-          return true;
-        }
       }
+    }
+    // everything is cleared, return true and clear timeout if needed
+    if (!Object.keys(watchList).length) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      return true;
     }
     return false;
   }
@@ -267,7 +266,8 @@ class ModularBehaviour extends HTMLElement {
     const configTemplate = this.querySelector(`template.${PREFIX}-config`);
     let config = {};
     if (configTemplate) {
-      if (this.jsonconfig) {
+      // Without config, it's parsed as json
+      if (!this.config) {
         config = JSON.parse(configTemplate.content.textContent);
       } else {
         this.loadConfigTemplate(configTemplate);

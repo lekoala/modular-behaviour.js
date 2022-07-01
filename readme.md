@@ -10,8 +10,10 @@ NOTE: the v3 contains significant changes over the previous versions. Check bran
 ## What does this library solve ?
 
 This library act as a glue between your js libraries and your html document. It will allow to initialize most things
-out of the box by using a custom element. The V3 use the custom element because it's self initializing (and can delay itself it's initialization)
-which is a big advantage over watching the dom for changes.
+out of the box by using a custom element. The V3 use a custom element because it's self initializing which is a big advantage over watching the dom for changes.
+You basically get "watching the dom" for free and get a clearer separation by note manipulating the html node itself.
+
+A minor downside is that you add a extra html node, and therefore it may affect styling (eg: direct > selectors).
 
 ## General use
 
@@ -23,13 +25,19 @@ Simply wrap your html node with <modular-behaviour>
 </modular-behaviour>
 ```
 
-WARNING : module names are CaSe SenSitiVe! For instance, jquery datable needs to use DataTable
-or FilePond needs a uppercase P.
-
 If the function `myGlobalFunction` is defined in the global scope, it will be called with two parameters:
 
 - the element (by default, the first child element of the custom element)
 - a config array (the data attributes on the custom elements)
+
+WARNING : module names are CaSe SenSitiVe! For instance, jquery datable needs to use DataTable
+or FilePond needs a uppercase P.
+
+### What if my arguments are different ?
+
+Indeed, this library expect the very classic (el, opts) convention. If you have a function using other
+arguments (eg: selector, opt1, opt2) you need to wrap that function into another function that accepts
+(el, opts) instead.
 
 ## Namespaced plugins
 
@@ -41,14 +49,121 @@ Avoid polluting the global namespace by defining a App namespace.
 </modular-behaviour>
 ```
 
+## Load order
+
+One of the nice thing with this library is that load order doesn't matter.
+You can define your html first, then load the js. Or the opposite.
+
+### Js first
+
+The javascript function is already available in the global scope and can be called.
+This will not be the case if you defer the loading of your scripts or use js modules.
+
+The js function is immediately triggered when the custom element is ready.
+
+### Js second
+
+If you deferred (or async) the loading of the js code, the html node may be defined before
+the js function responsible for initializing the html node is available.
+
+As a first measure, we try to initialize everything on domReady.
+
+After that, the callback is added to a watch list.
+We poll the scope (fast first, then slower) until the callback function is available.
+If polling doesn't result in any result after a certain time, it stops.
+
+### Provider scripts
+
+Polling the scope is not ideal. It's much better to know WHEN the js callback is made available and
+run only when ready.
+
+You can add a `provides` attribute to a script. Onload, it will trigger all matching nodes.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" type="module" provides="jQuery.select2"></script>
+```
+
 ## Init / pending classes
+
+While loading, the nodes get a `modular-behaviour-pending` class. Once initialized,
+they get a `modular-behaviour-initialized` class. This can help dealing with loading/init states.
+
+```css
+modular-behaviour {
+  visibility: hidden;
+}
+modular-behaviour.modular-behaviour-initialized {
+  visibility: visible;
+}
+```
 
 ## Advanced configuration
 
+### Using data attributes
+
+The default way to deal with configuration is through data attributes in the modular-behaviour element.
+They will be passed on as an array to the constructor function.
+
+### Using json config
+
+You can also add a custom config a json in a template with the class `modular-behaviour-config`.
+It is recommended to put the template at the end of the element.
+
+```html
+<modular-behaviour name="Cleave">
+  <input class="input-date-a" placeholder="YYYY-MM-DD" type="tel" />
+  <template class="modular-behaviour-config">{"myconfig": "test"}</template>
+</modular-behaviour>
+```
+
+### Using custom script
+
+Json is nice, but it's limited in the way it can express callbacks for example. A more powerful alternative
+is to load the configuration from a variable or a function.
+
+When doing so, instead of being loaded as json, the config will be injected as a js script.
+
+The script is executed after the function is available, but before its called.
+
+```html
+<modular-behaviour name="Cleave" config="myconfig">
+  <input class="input-date-a" placeholder="YYYY-MM-DD" type="tel" />
+  <template class="modular-behaviour-config">var myconfig = {myconfig: "test"} ; // my config</template>
+</modular-behaviour>
+```
+
 ## Manual init
 
+If you don't want to use the automatic system that look for a function, you can initialize things yourself.
+
+```html
+<modular-behaviour name="yetToDefine" manual>
+  <div>init</div>
+</modular-behaviour>
+```
+
+Then call
+
+```js
+window["yetToDefine"] = function (el, opts) {};
+customElements.get("modular-behaviour").run("yetToDefine");
+```
+
 ## Supported attributes
+
+| Name     | Default | Description                                                                           |
+| -------- | ------- | ------------------------------------------------------------------------------------- |
+| name     | null    | The name of the function to call in the global scope. It can be nested (eg: App.Func) |
+| config   | null    | The name of the var or function that provides the configuration                       |
+| manual   | false   | Don't use auto init system                                                            |
+| selector | ''      | Custom selector to select the target node (first child element by default)            |
+| func     | ''      | Alternative function to call instead of the one provided by name                      |
 
 ## Demo
 
 Please check `demo.html` for some sample usages
+
+## What about X feature from V2 ?
+
+Some features are not available anymore: transformers, hooks, multiple callbacks... These are mostly
+unecessary and can be replaced by custom constructors.
