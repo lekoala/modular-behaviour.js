@@ -330,11 +330,10 @@ class ModularBehaviour extends HTMLElement {
 
     // Instantiate class or function. ES6 Classes must use "new" keyword.
     const isClass = ModularBehaviour.isConstructable(constructor);
-    let instance;
     if (isClass) {
-      instance = new constructor(el, this.resolveConfig(config));
+      new constructor(el, this.resolveConfig(config));
     } else {
-      instance = Object.create(constructor.prototype || constructor);
+      const instance = Object.create(constructor.prototype || constructor);
       constructor.apply(instance, [el, this.resolveConfig(config)]);
     }
 
