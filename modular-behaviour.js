@@ -332,9 +332,9 @@ class ModularBehaviour extends HTMLElement {
     const isClass = ModularBehaviour.isConstructable(constructor);
     let instance;
     if (isClass) {
-      new constructor(el, this.resolveConfig(config));
+      instance = new constructor(el, this.resolveConfig(config));
     } else {
-      Object.create(constructor.prototype || constructor);
+      instance = Object.create(constructor.prototype || constructor);
       constructor.apply(instance, [el, this.resolveConfig(config)]);
     }
 
