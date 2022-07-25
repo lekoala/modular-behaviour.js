@@ -1,5 +1,9 @@
 "use strict";
 
+import normalizeData from "./utils/normalizeData.js";
+import globalValue from "./utils/globalValue.js";
+import isConstructable from "./utils/isConstructable.js";
+
 const PREFIX = "modular-behaviour";
 /**
  * @var {number}
@@ -150,7 +154,7 @@ class ModularBehaviour extends HTMLElement {
   resolveConfig(config = {}) {
     // Load config from js var
     if (this.config) {
-      config = ModularBehaviour.globalValue(this.config);
+      config = globalValue(this.config);
       if (!config) {
         console.warn(`${this.config} is not available`);
         config = {};
@@ -159,37 +163,12 @@ class ModularBehaviour extends HTMLElement {
         config = config();
       }
     }
-    // Merge data attribute
-    config = Object.assign(config, this.dataset);
+    // Merge data attribute with properyl typed data
+    let options = { ...this.dataset };
+    for (var key in options) {
+      config[key] = normalizeData(options[key]);
+    }
     return config;
-  }
-
-  /**
-   * Find value in the global or namespaced scope
-   * @param {string} name
-   * @returns {Function|object|null}
-   */
-  static globalValue(name) {
-    if (!name) {
-      return null;
-    }
-    if (name.includes(".")) {
-      const parts = name.split(".");
-      const ns = parts[0];
-      const func = parts[1];
-      const scope = window[ns];
-      if (!scope) {
-        return;
-      }
-      // Wrap jQuery in a constructor function
-      if ((ns === "$" || ns === "jQuery") && typeof window.jQuery.fn[func] !== "undefined") {
-        return (el, opts) => {
-          window.jQuery.fn[func].call(window.jQuery(el), opts);
-        };
-      }
-      return scope[func] || null;
-    }
-    return window[name] || null;
   }
 
   /**
@@ -206,7 +185,7 @@ class ModularBehaviour extends HTMLElement {
         if (prevOnload) {
           prevOnload(e);
         }
-        const constructor = ModularBehaviour.globalValue(name);
+        const constructor = globalValue(name);
         if (constructor) {
           cb(constructor);
         }
@@ -233,7 +212,7 @@ class ModularBehaviour extends HTMLElement {
    */
   static scanWatchList() {
     for (var n in watchList) {
-      const constructor = ModularBehaviour.globalValue(n);
+      const constructor = globalValue(n);
       if (constructor) {
         // init all pending
         for (var cb of watchList[n]) {
@@ -259,7 +238,7 @@ class ModularBehaviour extends HTMLElement {
    * @returns {bool}
    */
   static run(name) {
-    const constructor = ModularBehaviour.globalValue(name);
+    const constructor = globalValue(name);
     if (!constructor) {
       return false;
     }
@@ -277,20 +256,6 @@ class ModularBehaviour extends HTMLElement {
    */
   static watching() {
     return Object.keys(watchList);
-  }
-
-  /**
-   * @link https://stackoverflow.com/questions/29093396/how-do-you-check-the-difference-between-an-ecmascript-6-class-and-function
-   * @param {Function} fn
-   * @returns {bool}
-   */
-  static isConstructable(fn) {
-    try {
-      new new Proxy(fn, { construct: () => ({}) })();
-      return true;
-    } catch (err) {
-      return false;
-    }
   }
 
   /**
@@ -321,7 +286,7 @@ class ModularBehaviour extends HTMLElement {
 
     // Override constructor
     if (this.func) {
-      constructor = ModularBehaviour.globalValue(this.func);
+      constructor = globalValue(this.func);
       if (!constructor) {
         console.warn(`${this.func} is not available`);
         return;
@@ -329,7 +294,7 @@ class ModularBehaviour extends HTMLElement {
     }
 
     // Instantiate class or function. ES6 Classes must use "new" keyword.
-    const isClass = ModularBehaviour.isConstructable(constructor);
+    const isClass = isConstructable(constructor);
     if (isClass) {
       new constructor(el, this.resolveConfig(config));
     } else {
@@ -349,7 +314,7 @@ class ModularBehaviour extends HTMLElement {
       constructor = (await import(this.src)).default;
     } else {
       // Look for the class or function to instantiate
-      constructor = ModularBehaviour.globalValue(this.name);
+      constructor = globalValue(this.name);
     }
     if (!constructor) {
       this.classList.add(`${PREFIX}-pending`);

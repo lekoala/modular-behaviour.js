@@ -12,7 +12,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js" type="module"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" type="module"></script>
 
     <style type="text/css">
       modular-behaviour {
@@ -56,8 +56,8 @@
     <script src="https://cdn.jsdelivr.net/npm/filepond@4.30.4/dist/filepond.min.js" type="module" provides="FilePond.create"></script>
     <link href="https://cdn.jsdelivr.net/npm/filepond@4.30.4/dist/filepond.min.css" rel="stylesheet" />
 
-    <link href="https://unpkg.com/tabulator-tables@5.2.7/dist/css/tabulator.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@5.2.7/dist/js/tabulator.min.js" type="module" provides="Tabulator"></script>
+    <link href="https://unpkg.com/tabulator-tables@5.3/dist/css/tabulator.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@5.3/dist/js/tabulator.min.js" type="module" provides="Tabulator"></script>
 
     <script type="module">
       // Inline scripts cannot use "provides" feature
@@ -403,11 +403,12 @@
 
       <p>
         Get even more performance with lazy loading of the source script! Add <code>src</code> attribute and your source module will be
-        imported dynamically! Isn't that really cool ? This way, you can have a fully self contained element.
+        imported dynamically! Isn't that really cool ? This way, you can have a fully self contained element.<br />
+        You don't even need to add a <code>name</code> attribute.
       </p>
 
       <form action="https://vercel-dumper.vercel.app/">
-        <modular-behaviour name="Tags" src="https://cdn.jsdelivr.net/npm/bootstrap5-tags@1.4.35/tags.min.js" lazy>
+        <modular-behaviour src="https://cdn.jsdelivr.net/npm/bootstrap5-tags@1.4/tags.min.js" lazy>
           <select class="form-select" id="tags" name="tags[]" multiple data-allow-clear="1" required>
             <option selected="selected" disabled hidden value="">Choose a tag...</option>
             <option value="1" selected="selected">Apple</option>
@@ -417,8 +418,37 @@
             <option value="5">This is a tag that should not overflow out of the window</option>
           </select>
         </modular-behaviour>
+        <br/>
         <input type="submit" />
       </form>
+
+      <hr />
+
+      <p>It supports properly typed data attributes</p>
+
+      <modular-behaviour
+        lazy
+        src="https://cdn.jsdelivr.net/npm/cleave.js@1.6/dist/cleave-esm.js"
+        data-date="true"
+        data-delimiter="-"
+        data-date-pattern="['Y', 'm', 'd']"
+        class="modular-behaviour-initialized"
+      >
+        <input id="dateMask" class="form-control" placeholder="YYYY-MM-DD" />
+      </modular-behaviour>
+
+      <br>
+      <p>It won't load twice the <code>src</code></p>
+      <modular-behaviour
+        lazy
+        src="https://cdn.jsdelivr.net/npm/cleave.js@1.6/dist/cleave-esm.js"
+        data-date="true"
+        data-delimiter="-"
+        data-date-pattern="['Y', 'm', 'd']"
+        class="modular-behaviour-initialized"
+      >
+        <input id="dateMask2" class="form-control" placeholder="YYYY-MM-DD" />
+      </modular-behaviour>
     </div>
   </body>
 </html>

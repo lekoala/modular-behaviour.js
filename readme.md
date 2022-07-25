@@ -191,15 +191,15 @@ Here is an example using my bootstrap5-tags library.
 
 ## Supported attributes
 
-| Name     | Default | Description                                                                                                 |
-| -------- | ------- | ----------------------------------------------------------------------------------------------------------- |
-| name     | null    | The name of the function to call in the global scope. It can be nested (eg: App.Func)                       |
-| config   | null    | The name of the var or function that provides the configuration                                             |
-| manual   | false   | Don't use auto init system                                                                                  |
-| lazy     | false   | Lazily init html nodes when visible in viewport                                                             |
-| src      | ''      | Path to a js file that export a default class matching the name attribute that will be imported dynamically |
-| selector | ''      | Custom selector to select the target node (first child element by default)                                  |
-| func     | ''      | Alternative function to call instead of the one provided by name                                            |
+| Name     | Default | Description                                                                                             |
+| -------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| name     | null    | The name of the function to call in the global scope. It can be nested (eg: App.Func)                   |
+| config   | null    | The name of the var or function that provides the configuration                                         |
+| manual   | false   | Don't use auto init system                                                                              |
+| lazy     | false   | Lazily init html nodes when visible in viewport                                                         |
+| src      | ''      | Path to a js file that export a default class that will be imported dynamically and used as constructor |
+| selector | ''      | Custom selector to select the target node (first child element by default)                              |
+| func     | ''      | Alternative function to call instead of the one provided by name                                        |
 
 ## Demo
 
