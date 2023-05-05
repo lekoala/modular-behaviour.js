@@ -3,6 +3,10 @@ import normalizeData from "../utils/normalizeData.js";
 import isConstructable from "../utils/isConstructable.js";
 import globalValue from "../utils/globalValue.js";
 
+// Need this otherwise it fails?
+Event = window.Event;
+CustomEvent = window.CustomEvent;
+
 test("it normalize data", (t) => {
   const isTrue = normalizeData("true");
   t.is(isTrue, true);

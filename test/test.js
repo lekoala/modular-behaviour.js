@@ -23,12 +23,20 @@ const app = {
 };
 window["app"] = app;
 
+// Need this otherwise it fails?
+Event = window.Event;
+CustomEvent = window.CustomEvent;
+
+function timeout(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 test("it is registered", (t) => {
   let inst = customElements.get("modular-behaviour");
   t.is(inst, ModularBehaviour);
 });
 
-test("it runs functions", (t) => {
+test("it runs functions", async (t) => {
   window["testFunc"] = function (el, opts) {
     el.innerHTML = "test";
   };
@@ -36,12 +44,13 @@ test("it runs functions", (t) => {
   node.setAttribute("name", "testFunc");
   node.innerHTML = "<div>init</div>";
   document.appendChild(node);
+  await timeout(1);
   t.not(node.firstElementChild.innerHTML, "init");
   t.is(node.firstElementChild.innerHTML, "test");
   t.assert(node.classList.contains("modular-behaviour-initialized"));
 });
 
-test("it can have config", (t) => {
+test("it can have config", async (t) => {
   window["testConfig"] = function (el, opts) {
     el.innerHTML = opts.value;
   };
@@ -50,11 +59,12 @@ test("it can have config", (t) => {
   node.dataset.value = "test";
   node.innerHTML = "<div>init</div>";
   document.appendChild(node);
+  await timeout(1);
   t.not(node.firstElementChild.innerHTML, "init");
   t.is(node.firstElementChild.innerHTML, "test");
 });
 
-test("it can use a specific selector", (t) => {
+test("it can use a specific selector", async (t) => {
   window["testSelector"] = function (el, opts) {
     el.innerHTML = "test";
   };
@@ -64,12 +74,13 @@ test("it can use a specific selector", (t) => {
   node.selector = ".test";
   node.innerHTML = '<div>init</div><div class="test">init</div>';
   document.appendChild(node);
+  await timeout(1);
   t.is(node.firstElementChild.innerHTML, "init");
   t.not(node.firstElementChild.nextSibling.innerHTML, "init");
   t.is(node.firstElementChild.nextSibling.innerHTML, "test");
 });
 
-test("it can use an alternative function", (t) => {
+test("it can use an alternative function", async (t) => {
   window["altFunction"] = function (el, opts) {
     el.innerHTML = "altFunction";
   };
@@ -82,12 +93,13 @@ test("it can use an alternative function", (t) => {
   node.func = "altFunctionConstructor";
   node.innerHTML = "<div>init</div>";
   document.appendChild(node);
+  await timeout(1);
   t.not(node.firstElementChild.innerHTML, "init");
   t.not(node.firstElementChild.innerHTML, "altFunction");
   t.is(node.firstElementChild.innerHTML, "altFunctionConstructor");
 });
 
-test("it can have a templated config", (t) => {
+test("it can have a templated config", async (t) => {
   window["testTemplatedConfig"] = function (el, opts) {
     el.innerHTML = opts.value ?? "failed";
   };
@@ -106,6 +118,7 @@ test("it can have a templated config", (t) => {
 
   node.appendChild(template);
   document.appendChild(node);
+  await timeout(1);
 
   const tpl = node.querySelector("template.modular-behaviour-config");
   const script = node.querySelector("script");
@@ -117,7 +130,7 @@ test("it can have a templated config", (t) => {
   t.is(node.firstElementChild.innerHTML, "test");
 });
 
-test("it can have a json config", (t) => {
+test("it can have a json config", async (t) => {
   window["testJsonConfig"] = function (el, opts) {
     el.innerHTML = opts.value ?? "failed";
   };
@@ -134,6 +147,7 @@ test("it can have a json config", (t) => {
 
   node.appendChild(template);
   document.appendChild(node);
+  await timeout(1);
 
   const tpl = node.querySelector("template.modular-behaviour-config");
 
@@ -148,6 +162,7 @@ test("it polls functions", async (t) => {
   node.setAttribute("name", "testFunc2");
   node.innerHTML = "<div>init</div>";
   document.appendChild(node);
+  await timeout(1);
   t.assert(node.classList.contains("modular-behaviour-pending"));
   t.not(node.firstElementChild.innerHTML, "test");
   t.is(node.firstElementChild.innerHTML, "init");
@@ -171,12 +186,14 @@ test("it polls functions", async (t) => {
   });
 });
 
-test("it can init manually", (t) => {
+test("it can init manually", async (t) => {
   let node = document.createElement("modular-behaviour");
   node.setAttribute("name", "manualFunc");
   node.innerHTML = "<div>init</div>";
   node.manual = true;
   document.appendChild(node);
+  await timeout(1);
+
   t.assert(node.classList.contains("modular-behaviour-pending"));
   t.is(node.firstElementChild.innerHTML, "init");
 
@@ -185,39 +202,44 @@ test("it can init manually", (t) => {
   t.assert(!inst.watching().includes("manualFunc"));
 });
 
-test("it works with classes", (t) => {
+test("it works with classes", async (t) => {
   let node = document.createElement("modular-behaviour");
   node.setAttribute("name", "TestClass");
   node.innerHTML = "<div>init</div>";
   document.appendChild(node);
+  await timeout(1);
 
   t.is(node.firstElementChild.innerHTML, "test class");
 });
 
-test("it runs namespaced functions", (t) => {
+test("it runs namespaced functions", async (t) => {
   let node = document.createElement("modular-behaviour");
   node.setAttribute("name", "app.testFunc");
   node.innerHTML = "<div>init</div>";
   document.appendChild(node);
+  await timeout(1);
+
   t.not(node.firstElementChild.innerHTML, "init");
   t.is(node.firstElementChild.innerHTML, "test");
 });
 
-test("it works with namespaced classes", (t) => {
+test("it works with namespaced classes", async (t) => {
   let node = document.createElement("modular-behaviour");
   node.setAttribute("name", "app.TestClass");
   node.innerHTML = "<div>init</div>";
   document.appendChild(node);
+  await timeout(1);
 
   t.is(node.firstElementChild.innerHTML, "test class");
 });
 
-test("it works with jQuery plugins", (t) => {
+test("it works with jQuery plugins", async (t) => {
   let node = document.createElement("modular-behaviour");
   node.setAttribute("name", "$.testPlugin");
   node.dataset.test = "val";
   node.innerHTML = "<div>init</div>";
   document.appendChild(node);
+  await timeout(1);
   t.not(node.firstElementChild.innerHTML, "init");
   t.is(node.firstElementChild.innerHTML, "jquery");
   // it propagate config
