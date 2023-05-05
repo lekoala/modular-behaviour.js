@@ -106,6 +106,8 @@ They will be passed on as an array to the constructor function.
 
 ### Using json config
 
+You can use a special `data-mb-config` attribute.
+
 You can also add a custom config a json in a template with the class `modular-behaviour-config`.
 It is recommended to put the template at the end of the element.
 
@@ -115,6 +117,22 @@ It is recommended to put the template at the end of the element.
   <template class="modular-behaviour-config">{"myconfig": "test"}</template>
 </modular-behaviour>
 ```
+
+### Passing functions
+
+JSON is great, but what when you want to pass callbacks, eg: onRender, onChange etc...
+
+In order to support this, you can pass dedicated function object values that have two signatures
+These will be replaced by the `replaceCallbacks` utility.
+
+Simple strings (evaluated again window object):
+
+    "onChange": {"__fn": "myGlobalCallback"}
+    "onChange": {"__fn": "app.myGlobalCallback"} // can be nested
+
+Full definitions using array [args, body] that use new Function constructor:
+
+    "onChange": {"__fn":["ev,inst","console.log(ev)"]}}
 
 ### Using custom script
 
@@ -171,6 +189,8 @@ In this example, `imLazy` will only be looked for when the node is actually visi
 NOTE: lazy elements don't get a pending class (that is specific for elements waiting to be initialized due to a missing callback
 in the global scope).
 
+After init, a `connected` event is fired if you want to do more things.
+
 ## Self contained elements
 
 You can go one step further than lazy loading, you can actually let modular behaviour load your js modules. It only requires that
@@ -189,6 +209,13 @@ Here is an example using my bootstrap5-tags library.
 </modular-behaviour>
 ```
 
+## Cleaning up
+
+If an element is removed from the dom, it can be important to clean up after yourself to avoid memory issues or cluttering the dom
+
+By default, modular behaviour will call `destroy` on the created object. Otherwise, you may need to clean up yourself by listening
+to the `disconnected` event.
+
 ## Supported attributes
 
 | Name     | Default | Description                                                                                             |
@@ -204,6 +231,11 @@ Here is an example using my bootstrap5-tags library.
 ## Demo
 
 Please check `demo.html` for some sample usages
+
+## Improved integration
+
+As part of my effort to have consistent libraries, I've created [Formidable Elements](https://github.com/lekoala/formidable-elements)
+which cover many edge cases as well, like cleaning up when an element is destroyed.
 
 ## What about X feature from V2 ?
 

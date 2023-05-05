@@ -140,6 +140,17 @@
         addCleave();
       });
     </script>
+
+    <script type="module">
+      document.querySelectorAll('modular-behaviour').forEach((node) => {
+        node.addEventListener('connected', (ev) => {
+          console.log("connected", ev.detail);
+        })
+        node.addEventListener('disconnected', (ev) => {
+          console.log("disconnected", ev.detail);
+        })
+      })
+    </script>
   </head>
 
   <body>

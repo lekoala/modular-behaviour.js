@@ -3,6 +3,7 @@
 import normalizeData from "./utils/normalizeData.js";
 import globalValue from "./utils/globalValue.js";
 import isConstructable from "./utils/isConstructable.js";
+import replaceCallbacks from "./utils/replaceCallbacks.js";
 
 const PREFIX = "modular-behaviour";
 /**
@@ -264,10 +265,15 @@ class ModularBehaviour extends HTMLElement {
   init(constructor) {
     const configTemplate = this.querySelector(`template.${PREFIX}-config`);
     let config = {};
-    if (configTemplate) {
+    if (this.dataset.mbConfig) {
+      // As data attribute
+      const obj = JSON.parse(this.dataset.mbConfig) || {};
+      config = replaceCallbacks(obj);
+    } else if (configTemplate) {
       // Without config, it's parsed as json
       if (!this.config) {
-        config = JSON.parse(configTemplate.content.textContent);
+        const obj = JSON.parse(configTemplate.content.textContent) || {};
+        config = replaceCallbacks(obj);
       } else {
         this.loadConfigTemplate(configTemplate);
       }
@@ -296,15 +302,22 @@ class ModularBehaviour extends HTMLElement {
     // Instantiate class or function. ES6 Classes must use "new" keyword.
     const isClass = isConstructable(constructor);
     if (isClass) {
-      new constructor(el, this.resolveConfig(config));
+      this.inst = new constructor(el, this.resolveConfig(config));
     } else {
       const instance = Object.create(constructor.prototype || constructor);
-      constructor.apply(instance, [el, this.resolveConfig(config)]);
+      // Use (el, opts) convention
+      this.inst = constructor.apply(instance, [el, this.resolveConfig(config)]);
     }
 
     // Register init class
     this.classList.remove(`${PREFIX}-pending`);
     this.classList.add(`${PREFIX}-initialized`);
+
+    this.dispatchEvent(
+      new CustomEvent("connected", {
+        detail: this.inst,
+      })
+    );
   }
 
   async onConnect() {
@@ -337,7 +350,24 @@ class ModularBehaviour extends HTMLElement {
       observer.observe(this);
       return;
     }
-    this.onConnect();
+    // Wait until parsed
+    setTimeout(() => {
+      this.onConnect();
+    }, 0);
+  }
+
+  disconnectedCallback() {
+    // Destroy convention (eg: bootstrap like component)
+    if (typeof this.inst.destroy === "function") {
+      this.inst.destroy();
+    }
+    // Deal with it yourself ?
+    this.dispatchEvent(
+      new CustomEvent("disconnected", {
+        detail: this.inst,
+      })
+    );
+    this.inst = null;
   }
 }
 
