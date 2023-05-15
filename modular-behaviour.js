@@ -358,7 +358,7 @@ class ModularBehaviour extends HTMLElement {
 
   disconnectedCallback() {
     // Destroy convention (eg: bootstrap like component)
-    if (typeof this.inst.destroy === "function") {
+    if (this.inst && typeof this.inst.destroy === "function") {
       this.inst.destroy();
     }
     // Deal with it yourself ?
